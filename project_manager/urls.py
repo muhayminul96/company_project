@@ -1,16 +1,20 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import UserViewSet, get_user_details, update_user, delete_user, register_user, LoginView
+from .views import (UserViewSet, get_user_details, update_user, delete_user, register_user, LoginView, ProjectViewSet,
+                    TaskViewSet, task_in_project)
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet, basename='users')
+router.register(r'projects', ProjectViewSet, basename='projects')
+router.register(r'tasks', TaskViewSet, basename='tasks')
 
 urlpatterns = [
-    path('api/users/register/', register_user, name='user-register'),
-    path('api/users/login/', LoginView.as_view(), name='user-login'),
-    path('api/users/<int:id>/', get_user_details, name='user-details'),
-    path('api/users/<int:id>/update/', update_user, name='user-update'),
-    path('api/users/<int:id>/delete/', delete_user, name='user-delete'),
+    path('users/register/', register_user, name='user-register'),
+    path('users/login/', LoginView.as_view(), name='user-login'),
+    path('users/<int:id>/', get_user_details, name='user-details'),
+    path('users/<int:id>/update/', update_user, name='user-update'),
+    path('users/<int:id>/delete/', delete_user, name='user-delete'),
+    path('projects/<int:project_id>/tasks/', task_in_project, name='project-tasks'),
 ]
 
 urlpatterns += router.urls
