@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User, Project, Task
-from .serializers import UserSerializer, UserRegisterSerializer, ProjectSerializer, TaskSerializer
+from .serializers import UserSerializer, UserRegisterSerializer, ProjectSerializer, TaskSerializer, CommentSerializer
 
 User = get_user_model()
 
@@ -142,3 +142,48 @@ def task_in_project(request, project_id=None):
         return Response(serializer.data)
 
 
+@api_view(['GET', 'POST'])
+def comments_in_task(request, task_id=None):
+    try:
+        task = Task.objects.get(id=task_id)
+    except Task.DoesNotExist:
+        return Response({'detail': 'Task not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        comments = Comment.objects.filter(task=task)
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        print(request.data)
+        data = request.data.copy()
+        data['task'] = task_id
+
+        serializer = CommentSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+def comment_detail(request, id=None):
+    try:
+        comment = Comment.objects.get(id=id)
+    except Comment.DoesNotExist:
+        return Response({'detail': 'Comment not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = CommentSerializer(comment)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT' or request.method == 'PATCH':
+        partial = (request.method == 'PATCH')
+        serializer = CommentSerializer(comment, data=request.data, partial=partial)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        comment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
