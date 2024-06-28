@@ -2,14 +2,15 @@ from django.contrib.auth import get_user_model, authenticate
 from rest_framework import status, viewsets
 from django.contrib.auth.models import update_last_login
 from rest_framework.decorators import api_view, permission_classes, action
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import User, Project, Task
+from .models import User, Project, Task, Comment
 from .serializers import UserSerializer, UserRegisterSerializer, ProjectSerializer, TaskSerializer, CommentSerializer
 
 User = get_user_model()
+
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -73,6 +74,7 @@ def get_user_details(request, id):
     return Response(serializer.data)
 
 @api_view(['PUT', 'PATCH'])
+@permission_classes([IsAuthenticated])
 def update_user(request, id):
     try:
         user = User.objects.get(id=id)
@@ -84,7 +86,9 @@ def update_user(request, id):
     serializer.save()
     return Response(serializer.data)
 
+
 @api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
 def delete_user(request, id):
     try:
         user = User.objects.get(id=id)
@@ -115,6 +119,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 
 
 @api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
 def task_in_project(request, project_id=None):
     if request.method == 'POST':
         try:
@@ -143,6 +148,7 @@ def task_in_project(request, project_id=None):
 
 
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 def comments_in_task(request, task_id=None):
     try:
         task = Task.objects.get(id=task_id)
@@ -166,6 +172,7 @@ def comments_in_task(request, task_id=None):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+@permission_classes([IsAuthenticated])
 def comment_detail(request, id=None):
     try:
         comment = Comment.objects.get(id=id)

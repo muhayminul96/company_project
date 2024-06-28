@@ -1,5 +1,9 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 from .views import (UserViewSet, get_user_details, update_user, delete_user, register_user, LoginView, ProjectViewSet,
                     TaskViewSet, task_in_project, comments_in_task, comment_detail)
 
@@ -9,6 +13,8 @@ router.register(r'projects', ProjectViewSet, basename='projects')
 router.register(r'tasks', TaskViewSet, basename='tasks')
 
 urlpatterns = [
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('users/register/', register_user, name='user-register'),
     path('users/login/', LoginView.as_view(), name='user-login'),
     path('users/<int:id>/', get_user_details, name='user-details'),
